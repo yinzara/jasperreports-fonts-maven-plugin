@@ -195,8 +195,8 @@
 <h2>Usage<a name="Usage"></a></h2>
 <p>The jasperreports-fonts-maven-plugin will process a set of TrueType and Type-1 fonts (usually of the extensions: .ttf, .TTF, .fon, .FON)</p>
 <div class="section">
-<h3>The <tt>jasperreports-fonts:process-fonts</tt> Goal<a name="The_jasperreports-fonts:process-fonts_Goal"></a></h3>
-<p>The <tt>jasperreports-fonts:process-fonts</tt> goal is bound to the <tt>process-resources</tt> phase since it processes font resource files and outputs a result depending on the goal configuration.</p>
+<h3>The <tt>jasperreports-fonts-maven-plugin:process-fonts</tt> Goal<a name="The_jasperreports-fonts-maven-plugin:process-fonts_Goal"></a></h3>
+<p>The <tt>jasperreports-fonts-maven-plugin:process-fonts</tt> goal is bound to the <tt>process-resources</tt> phase since it processes font resource files and outputs a result depending on the goal configuration.</p>
 <div class="source">
 <pre>&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot; xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;  
 &lt;plugins&gt;
@@ -231,25 +231,25 @@
 <p>and the output will be in your target folder named $<a name="project.build.finalName">project.build.finalName</a>-fonts.jar.</p>
 <p>You can also remove the <tt>executions</tt> element above and then execute it manually:</p>
 <div class="source">
-<pre>mvn jasperreports-fonts:process-fonts
+<pre>mvn jasperreports-fonts-maven-plugin:process-fonts
 </pre></div></div></div>
 <div class="section">
 <h2>Standalone Usage<a name="Standalone_Usage"></a></h2>
 <p>The plugin can be run standalone. </p>
 <p>For configuration parameters see <a href="./plugin-info.html">Goals</a></p>
-<p>So given you're running maven from a directory containing a war file named 'my-war-file-1.0.0.war': </p>
+<p>So given you'd like to package all fonts in the C:\Windows\Fonts directory</p>
 <div class="source">
-<pre>mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.fonts.finalName=my-fonts.jar -Djasperreports.fonts.packageFonts=true -DoutputDir=target
+<pre>mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DpackageFonts=true -DsrcPath=C:\Windows\Fonts
 
 OR
 
-mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.fonts.finalName=my-fonts.jar -Djasperreports.fonts.deploymentPath=c:\\Windows\\Fonts\\ -DoutputDir=target
+mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DsrcPath=C:\Windows\Fonts
 
 </pre></div>
 <p>This will output a file named 'my-fonts.jar' in the 'target' folder that is ready for deployment.</p>
-<p>The &quot;jasperreports.font.packageFonts&quot; property is the must important. By default this is false which will cause your fonts to be referenced by their absolute patch on the PC running the command. </p>
+<p>The &quot;packageFonts&quot; property is the must important. By default this is false which will cause your fonts to be referenced by their absolute path on the PC running the command. </p>
 <p>If you plan on running the Jasper library or JasperReports Server on the same PC running the command, you can omit the &quot;deploymentPath&quot; property otherwise you should set this to the path where you will copy all processed font files on the PC running Jasper. Setting this value to &quot;.&quot; will assume the font files will be installed in the root of the classpath when running Jasper.</p>
-<p>If you set &quot;jasperreports.font.packageFonts&quot; to true, all font files will be copied into the resultant jar file and this can be installed directly on the computer running Jasper. However, if you do not have rights to distribute these fonts, be careful about violating licenses.</p></div>
+<p>If you set &quot;packageFonts&quot; to true, all font files will be copied into the resultant jar file and this can be installed directly on the system running Jasper. However, if you do not have rights to distribute these fonts, be careful about violating licenses.</p></div>
 <div class="section">
 <h2>Settings.xml - plugin groups<a name="Settings.xml_-_plugin_groups"></a></h2>
 <p>To make the plugin commands shorter, add the following element to your Maven settings.xml in your $M2_HOME/conf (Linux) or %M2_HOME%/conf (Windows) folder.</p>
@@ -267,7 +267,7 @@ mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.f
 </pre></div>
 <p>Then you can run:</p>
 <div class="source">
-<pre>mvn jasperreports-fonts:process-fonts ...
+<pre>mvn jasperreports-fonts-maven-plugin:package-fonts ...
 </pre></div></div>
 <div class="section">
 <h2>Ant Usage<a name="Ant_Usage"></a></h2>
@@ -282,7 +282,9 @@ mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.f
 &lt;artifact:mvn&gt;
         &lt;arg value=&quot;com.yinzara:jasperreports-fonts-maven-plugin:process-fonts&quot;/&gt;
         &lt;arg value=&quot;-DpackageFonts=true&quot;/&gt;      
-        &lt;arg value=&quot;-DoutputDir=${path.to.output.directory}&quot;/&gt;
+        &lt;arg value=&quot;-DsrcPath=${path.to.fonts.directory}&quot;/&gt;
+        &lt;arg value=&quot;-DoutputPath=${path.to.output.directory}&quot;/&gt;
+        &lt;arg value=&quot;-DjarName=my-fonts.jar&quot;/&gt;
 &lt;/artifact:mvn&gt;
 ...
 &lt;/target&gt;
