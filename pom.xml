@@ -22,6 +22,21 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    
+    <developers>
+        
+        <developer>
+            <id>mmorrissette</id>
+            <email>yinzara@gmail.com</email>
+            <name>Matthew Morrissette</name>
+            <roles>
+                <role>creator</role>
+                <role>contributor</role>
+            </roles>
+            <timezone>America/Los_Angeles</timezone>            
+        </developer>
+        
+    </developers>
   
     <scm>
         <url>https://github.com/yinzara/jasperreports-fonts-maven-plugin</url>
