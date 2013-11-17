@@ -96,6 +96,14 @@
                         <mavenExecutorId>forked-path</mavenExecutorId>                        
                     </configuration>
                 </plugin>
+		<plugin>
+                        <groupId>com.github.github</groupId>
+                        <artifactId>site-maven-plugin</artifactId>
+                        <version>0.9</version>
+                        <configuration>
+                            <message>Creating site for ${project.version}</message>
+                        </configuration>  
+		</plugin>
             </plugins>
         </pluginManagement>
         <plugins>
