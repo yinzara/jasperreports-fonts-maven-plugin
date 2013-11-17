@@ -8,6 +8,8 @@
     <packaging>maven-plugin</packaging>
 
     <name>jasperreports-fonts-maven-plugin Maven Plugin</name>
+    
+    <description>Maven plugin to generate artifacts needed to use fonts when generating PDFs with Jasper Reports</description>
 
     <url>http://yinzara.github.io/jasperreports-fonts-maven-plugin</url>
 
