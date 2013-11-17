@@ -1,26 +1,25 @@
 /*
- * The MIT License
- *
- * Copyright 2013 Matthew.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+The MIT License (MIT)
+
+Copyright (c) 2013 yinzara
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 package com.yinzara.jasperreports.fonts.maven.plugin;
 
@@ -73,298 +72,372 @@ public abstract class ProjectForwarder extends MavenProject {
 
 	protected abstract MavenProject delegate(); 
 	
+        @Override
 	public File getParentFile() {
 		return delegate().getParentFile();
 	}
 
+        @Override
 	public void setParentFile(File parentFile) {
 		delegate().setParentFile(parentFile);
 	}
 
+        @Override
 	public Set<Artifact> createArtifacts(ArtifactFactory artifactFactory, String inheritedScope, ArtifactFilter filter) throws InvalidDependencyVersionException {
 		return delegate().createArtifacts(artifactFactory, inheritedScope, filter);
 	}
 
+        @Override
 	public String getModulePathAdjustment(MavenProject moduleProject) throws IOException {
 		return delegate().getModulePathAdjustment(moduleProject);
 	}
 
+        @Override
 	public Artifact getArtifact() {
 		return delegate().getArtifact();
 	}
 
+        @Override
 	public void setArtifact(Artifact artifact) {
 		delegate().setArtifact(artifact);
 	}
 
+        @Override
 	public Model getModel() {
 		return delegate().getModel();
 	}
 
+        @Override
 	public MavenProject getParent() {
 		return delegate().getParent();
 	}
 
+        @Override
 	public void setParent(MavenProject parent) {
 		delegate().setParent(parent);
 	}
 
+        @Override
 	public boolean hasParent() {
 		return delegate().hasParent();
 	}
 
+        @Override
 	public File getFile() {
 		return delegate().getFile();
 	}
 
+        @Override
 	public void setFile(File file) {
 		delegate().setFile(file);
 	}
 
+        @Override
 	public File getBasedir() {
 		return delegate().getBasedir();
 	}
 
+        @Override
 	public void setDependencies(List<Dependency> dependencies) {
 		delegate().setDependencies(dependencies);
 	}
 
+        @Override
 	public List<Dependency> getDependencies() {
 		return delegate().getDependencies();
 	}
 
+        @Override
 	public DependencyManagement getDependencyManagement() {
 		return delegate().getDependencyManagement();
 	}
 
+        @Override
 	public void addCompileSourceRoot(String path) {
 		delegate().addCompileSourceRoot(path);
 	}
 
+        @Override
 	public void addScriptSourceRoot(String path) {
 		delegate().addScriptSourceRoot(path);
 	}
 
+        @Override
 	public void addTestCompileSourceRoot(String path) {
 		delegate().addTestCompileSourceRoot(path);
 	}
 
+        @Override
 	public List<String> getCompileSourceRoots() {
 		return delegate().getCompileSourceRoots();
 	}
 
+        @Override
 	public List<String> getScriptSourceRoots() {
 		return delegate().getScriptSourceRoots();
 	}
 
+        @Override
 	public List<String> getTestCompileSourceRoots() {
 		return delegate().getTestCompileSourceRoots();
 	}
 
+        @Override
 	public List<String> getCompileClasspathElements() throws DependencyResolutionRequiredException {
 		return delegate().getCompileClasspathElements();
 	}
 
+        @Override
 	public List<Artifact> getCompileArtifacts() {
 		return delegate().getCompileArtifacts();
 	}
 
+        @Override
 	public List<Dependency> getCompileDependencies() {
 		return delegate().getCompileDependencies();
 	}
 
+        @Override
 	public List<String> getTestClasspathElements() throws DependencyResolutionRequiredException {
 		return delegate().getTestClasspathElements();
 	}
 
+        @Override
 	public List<Artifact> getTestArtifacts() {
 		return delegate().getTestArtifacts();
 	}
 
+        @Override
 	public List<Dependency> getTestDependencies() {
 		return delegate().getTestDependencies();
 	}
 
+        @Override
 	public List<String> getRuntimeClasspathElements() throws DependencyResolutionRequiredException {
 		return delegate().getRuntimeClasspathElements();
 	}
 
+        @Override
 	public List<Artifact> getRuntimeArtifacts() {
 		return delegate().getRuntimeArtifacts();
 	}
 
+        @Override
 	public List<Dependency> getRuntimeDependencies() {
 		return delegate().getRuntimeDependencies();
 	}
 
+        @Override
 	public List<String> getSystemClasspathElements() throws DependencyResolutionRequiredException {
 		return delegate().getSystemClasspathElements();
 	}
 
+        @Override
 	public List<Artifact> getSystemArtifacts() {
 		return delegate().getSystemArtifacts();
 	}
 
+        @Override
 	public List<Dependency> getSystemDependencies() {
 		return delegate().getSystemDependencies();
 	}
 
+        @Override
 	public void setModelVersion(String pomVersion) {
 		delegate().setModelVersion(pomVersion);
 	}
 
+        @Override
 	public String getModelVersion() {
 		return delegate().getModelVersion();
 	}
-
+        
+        @Override
 	public String getId() {
 		return delegate().getId();
 	}
 
+        @Override
 	public void setGroupId(String groupId) {
 		delegate().setGroupId(groupId);
 	}
 
+        @Override
 	public String getGroupId() {
 		return delegate().getGroupId();
 	}
 
+        @Override
 	public void setArtifactId(String artifactId) {
 		delegate().setArtifactId(artifactId);
 	}
 
+        @Override
 	public String getArtifactId() {
 		return delegate().getArtifactId();
 	}
 
+        @Override
 	public void setName(String name) {
 		delegate().setName(name);
 	}
 
+        @Override
 	public String getName() {
 		return delegate().getName();
 	}
 
+        @Override
 	public void setVersion(String version) {
 		delegate().setVersion(version);
 	}
-
+        
+        @Override
 	public String getVersion() {
 		return delegate().getVersion();
 	}
 
+        @Override
 	public String getPackaging() {
 		return delegate().getPackaging();
 	}
 
+        @Override
 	public void setPackaging(String packaging) {
 		delegate().setPackaging(packaging);
 	}
 
+        @Override
 	public void setInceptionYear(String inceptionYear) {
 		delegate().setInceptionYear(inceptionYear);
 	}
 
+        @Override
 	public String getInceptionYear() {
 		return delegate().getInceptionYear();
 	}
 
+        @Override
 	public void setUrl(String url) {
 		delegate().setUrl(url);
 	}
 
+        @Override
 	public String getUrl() {
 		return delegate().getUrl();
 	}
 
+        @Override
 	public Prerequisites getPrerequisites() {
 		return delegate().getPrerequisites();
 	}
 
+        @Override
 	public void setIssueManagement(IssueManagement issueManagement) {
 		delegate().setIssueManagement(issueManagement);
 	}
 
+        @Override
 	public CiManagement getCiManagement() {
 		return delegate().getCiManagement();
 	}
 
+        @Override
 	public void setCiManagement(CiManagement ciManagement) {
 		delegate().setCiManagement(ciManagement);
 	}
 
+        @Override
 	public IssueManagement getIssueManagement() {
 		return delegate().getIssueManagement();
 	}
 
+        @Override
 	public void setDistributionManagement(DistributionManagement distributionManagement) {
 		delegate().setDistributionManagement(distributionManagement);
 	}
 
+        @Override
 	public DistributionManagement getDistributionManagement() {
 		return delegate().getDistributionManagement();
 	}
 
+        @Override
 	public void setDescription(String description) {
 		delegate().setDescription(description);
 	}
 
+        @Override
 	public String getDescription() {
 		return delegate().getDescription();
 	}
 
+        @Override
 	public void setOrganization(Organization organization) {
 		delegate().setOrganization(organization);
 	}
 
+        @Override
 	public Organization getOrganization() {
 		return delegate().getOrganization();
 	}
 
+        @Override
 	public void setScm(Scm scm) {
 		delegate().setScm(scm);
 	}
 
+        @Override
 	public Scm getScm() {
 		return delegate().getScm();
 	}
 
+        @Override
 	public void setMailingLists(List<MailingList> mailingLists) {
 		delegate().setMailingLists(mailingLists);
 	}
 
+        @Override
 	public List<MailingList> getMailingLists() {
 		return delegate().getMailingLists();
 	}
 
+        @Override
 	public void addMailingList(MailingList mailingList) {
 		delegate().addMailingList(mailingList);
 	}
 
+        @Override
 	public void setDevelopers(List<Developer> developers) {
 		delegate().setDevelopers(developers);
 	}
 
+        @Override
 	public List<Developer> getDevelopers() {
 		return delegate().getDevelopers();
 	}
 
+        @Override
 	public void addDeveloper(Developer developer) {
 		delegate().addDeveloper(developer);
 	}
 
+        @Override
 	public void setContributors(List<Contributor> contributors) {
 		delegate().setContributors(contributors);
 	}
 
+        @Override
 	public List<Contributor> getContributors() {
 		return delegate().getContributors();
 	}
 
+        @Override
 	public void addContributor(Contributor contributor) {
 		delegate().addContributor(contributor);
 	}
 
+        @Override
 	public void setBuild(Build build) {
 		delegate().setBuild(build);
 	}
