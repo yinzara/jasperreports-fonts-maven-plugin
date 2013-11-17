@@ -2,9 +2,9 @@ Usage
 
   The jasperreports-fonts-maven-plugin will process a set of TrueType and Type-1 fonts (usually of the extensions: .ttf, .TTF, .fon, .FON)
   
-* The <<<jasperreports-fonts:process-fonts>>> Goal
+* The <<<jasperreports-fonts-maven-plugin:process-fonts>>> Goal
 
-  The <<<jasperreports-fonts:process-fonts>>> goal is bound to the <<<process-resources>>> phase since it processes font resource files and outputs a result depending on the goal configuration.
+  The <<<jasperreports-fonts-maven-plugin:process-fonts>>> goal is bound to the <<<process-resources>>> phase since it processes font resource files and outputs a result depending on the goal configuration.
   
 +-------+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">  
@@ -45,7 +45,7 @@ mvn process-resources
   You can also remove the <<<executions>>> element above and then execute it manually:
   
 +-------+
-mvn jasperreports-fonts:process-fonts
+mvn jasperreports-fonts-maven-plugin:process-fonts
 +-------+
 
 Standalone Usage
@@ -54,24 +54,24 @@ Standalone Usage
   
   For configuration parameters see {{{./plugin-info.html}Goals}}
   
-  So given you're running maven from a directory containing a war file named 'my-war-file-1.0.0.war':  
+  So given you'd like to package all fonts in the C:\Windows\Fonts directory
 
 +-------+
-mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.fonts.finalName=my-fonts.jar -Djasperreports.fonts.packageFonts=true -DoutputDir=target
+mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DpackageFonts=true -DsrcPath=C:\Windows\Fonts
 
 OR
 
-mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -Djasperreports.fonts.finalName=my-fonts.jar -Djasperreports.fonts.deploymentPath=c:\\Windows\\Fonts\\ -DoutputDir=target
+mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DsrcPath=C:\Windows\Fonts
 
 +-------+
 
     This will output a file named 'my-fonts.jar' in the 'target' folder that is ready for deployment.
     
-    The "jasperreports.font.packageFonts" property is the must important.  By default this is false which will cause your fonts to be referenced by their absolute patch on the PC running the command.  
+    The "packageFonts" property is the must important.  By default this is false which will cause your fonts to be referenced by their absolute path on the PC running the command.  
 
     If you plan on running the Jasper library or JasperReports Server on the same PC running the command, you can omit the "deploymentPath" property otherwise you should set this to the path where you will copy all processed font files on the PC running Jasper. Setting this value to "." will assume the font files will be installed in the root of the classpath when running Jasper.
 
-    If you set "jasperreports.font.packageFonts" to true, all font files will be copied into the resultant jar file and this can be installed directly on the computer running Jasper.  However, if you do not have rights to distribute these fonts, be careful about violating licenses.
+    If you set "packageFonts" to true, all font files will be copied into the resultant jar file and this can be installed directly on the system running Jasper.  However, if you do not have rights to distribute these fonts, be careful about violating licenses.
 
 Settings.xml - plugin groups
 
