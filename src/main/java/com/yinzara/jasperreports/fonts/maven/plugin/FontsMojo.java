@@ -77,7 +77,7 @@ public class FontsMojo extends AbstractMojo {
      * fonts, be careful about violating licenses.</p>
      */
     @Parameter(required = false, defaultValue = "false", property = "packageFonts")
-    private boolean packageFonts;
+    protected boolean packageFonts;
 
     /**
      * <p>
@@ -90,7 +90,7 @@ public class FontsMojo extends AbstractMojo {
      * In a project this defaults to "${basedir}/src/fonts</p>
      */
     @Parameter(required = false, property = "srcPath")
-    private String srcPath;
+    protected String srcPath;
 
     /**
      * <p>
@@ -103,7 +103,7 @@ public class FontsMojo extends AbstractMojo {
      * {@link #classifier} configuration property of this plugin</p>
      */
     @Parameter(required = false, property = "jarName")
-    private String jarName;
+    protected String jarName;
 
     /**
      * <p>
@@ -115,7 +115,7 @@ public class FontsMojo extends AbstractMojo {
      * In a project this defaults to ${project.build.directory} </p>
      */
     @Parameter(required = false, property = "outputPath")
-    private String outputPath;
+    protected String outputPath;
 
     /**
      * <p>
@@ -132,7 +132,7 @@ public class FontsMojo extends AbstractMojo {
      * libraries on the same running Jasper application</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.xmlFileName")
-    private String xmlFileName;
+    protected String xmlFileName;
 
     /**
      * <p>
@@ -151,7 +151,7 @@ public class FontsMojo extends AbstractMojo {
      * root of the classpath on the system running Jasper</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.deploymentPath")
-    private String deploymentPath;
+    protected String deploymentPath;
 
     /**
      * <p>
@@ -167,7 +167,7 @@ public class FontsMojo extends AbstractMojo {
      * to ${project.build.directory}/fonts.</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.outputDirectory")
-    private String workPath;
+    protected String workPath;
 
     /**
      * <p>
@@ -177,7 +177,7 @@ public class FontsMojo extends AbstractMojo {
      * Defaults to: .ttf, .TTF, .fon, .FON
      */
     @Parameter(required = false)
-    private String[] includes;
+    protected String[] includes;
 
     /**
      * <p>
@@ -188,7 +188,7 @@ public class FontsMojo extends AbstractMojo {
      * Overrides anything specified in the {@link #renames} parameter</p>
      */
     @Parameter(required = false)
-    private FamilyRename[] familyRenames;
+    protected FamilyRename[] familyRenames;
 
     /**
      * <p>
@@ -205,14 +205,14 @@ public class FontsMojo extends AbstractMojo {
      * </pre>
      */
     @Parameter(required = false, property = "jasperreports.fonts.renames")
-    private String renames;
+    protected String renames;
 
     /**
      * <p>
      * When renaming font families, should the original name be mapped too?</p>
      */
     @Parameter(required = false, defaultValue = "true")
-    private boolean copyOnRename;
+    protected boolean copyOnRename;
 
     /**
      * <p>
@@ -224,7 +224,7 @@ public class FontsMojo extends AbstractMojo {
      * the output xml</p>
      */
     @Parameter(required = false, defaultValue = "true", property = "jasperreports.fonts.requireNormalFonts")
-    private boolean requireNormalFonts;
+    protected boolean requireNormalFonts;
 
     /**
      * <p>
@@ -234,7 +234,7 @@ public class FontsMojo extends AbstractMojo {
      * skipped</p>
      */
     @Parameter(required = false, defaultValue = "false", property = "jasperreports.fonts.failOnBadFont")
-    private boolean failOnBadFont;
+    protected boolean failOnBadFont;
 
     /**
      * <p>
@@ -243,7 +243,7 @@ public class FontsMojo extends AbstractMojo {
      * The default is almost always appropriate</p>
      */
     @Parameter(required = false, defaultValue = "true")
-    private boolean pdfEmbedded;
+    protected boolean pdfEmbedded;
 
     /**
      * <p>
@@ -252,7 +252,7 @@ public class FontsMojo extends AbstractMojo {
      * The default value is almost always appropriate</p>
      */
     @Parameter(required = false, defaultValue = "Identity-H")
-    private String pdfEncoding;
+    protected String pdfEncoding;
 
     /**
      * <p>
@@ -260,7 +260,7 @@ public class FontsMojo extends AbstractMojo {
      * (has no effect in standalone)</p>
      */
     @Parameter(required = false, defaultValue = "false")
-    private boolean attachArtifact;
+    protected boolean attachArtifact;
 
     /**
      * <p>
@@ -268,7 +268,7 @@ public class FontsMojo extends AbstractMojo {
      * attached artifact</p>
      */
     @Parameter(required = false, defaultValue = "fonts", property = "jasperreports.fonts.classifier")
-    private String classifier;
+    protected String classifier;
 
     private Map<String, String> renameMap;
 
