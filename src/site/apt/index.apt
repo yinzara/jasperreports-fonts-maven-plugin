@@ -1,0 +1,10 @@
+What is it?
+
+    The jasperreports-font-maven-plugin helps you to render PDF reports using {{{http://community.jaspersoft.com/project/jasperreports-library}JasperReports}} in a java application or on {{{http://community.jaspersoft.com/project/jasperreports-server}JasperReports Server}}.
+    
+The Problem?
+
+    When outputting a PDF report in Jasper, one must embed the fonts of that report into the PDF itself.  That way no matter what computer the PDF is opened on, it will appear with the correct fonts.
+    To do this requires making those font files available to the Jasper runtime which is done through extensions.  This requires a jasperreports_extension.properties file, a font XML configuration file, and the actual font files themselves.
+
+    
