@@ -11,7 +11,7 @@ Usage
 <plugins>
 ...
 <plugin>
-	<groupId>org.eclipse.ijetty</groupId>
+	<groupId>com.yinzara</groupId>
 	<artifactId>jasperreports-fonts-maven-plugin</artifactId>
 	<version>${jasperreports-fonts-maven-plugin-version}</version>
 	<executions>
