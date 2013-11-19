@@ -195,7 +195,7 @@
                 </plugins>
 
             </build>
-        </profile>
+        </profile>	
         <profile>
             <id>release-sign-artifacts</id>
             <activation>
@@ -246,7 +246,7 @@
                                 <goals>
                                     <goal>site</goal>
                                 </goals>
-                                <phase>verify</phase>
+                                <phase>site-deploy</phase>
                             </execution>
                         </executions>
                     </plugin>          
