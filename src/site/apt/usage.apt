@@ -57,12 +57,13 @@ Standalone Usage
   So given you'd like to package all fonts in the C:\Windows\Fonts directory
 
 +-------+
-mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DpackageFonts=true -DsrcPath=C:\Windows\Fonts
+mvn com.yinzara:jasperreports-fonts-maven-plugin:process-fonts -DjarName=my-fonts -DpackageFonts=true -DsrcPath=C:\Windows\Fonts
++-------+
 
 OR
 
-mvn com.yinzara:jasperreports-fonts-maven-plugin:package-fonts -DjarName=my-fonts -DsrcPath=C:\Windows\Fonts
-
+--------+
+mvn com.yinzara:jasperreports-fonts-maven-plugin:process-fonts -DjarName=my-fonts -DsrcPath=C:\Windows\Fonts
 +-------+
 
     This will output a file named 'my-fonts.jar' in the 'target' folder that is ready for deployment.
@@ -93,7 +94,7 @@ Settings.xml - plugin groups
   Then you can run:
 
 +-------+
-mvn jasperreports-fonts-maven-plugin:package-fonts ...
+mvn jasperreports-fonts:process-fonts ...
 +-------+
 
 Ant Usage

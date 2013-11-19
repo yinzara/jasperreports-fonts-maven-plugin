@@ -1,25 +1,25 @@
-/*
-The MIT License (MIT)
+/**
+ The MIT License (MIT)
 
-Copyright (c) 2013 yinzara
+ Copyright (c) 2013 yinzara
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
+ Permission is hereby granted, free of charge, to any person obtaining a copy of
+ this software and associated documentation files (the "Software"), to deal in
+ the Software without restriction, including without limitation the rights to
+ use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ the Software, and to permit persons to whom the Software is furnished to do so,
+ subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.yinzara.jasperreports.fonts.maven.plugin;
 
 import java.awt.Font;
@@ -28,16 +28,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.BuildPluginManager;
+
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
@@ -47,43 +46,45 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectHelper;
 import org.codehaus.plexus.archiver.jar.JarArchiver;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
+ * Scans the source directories for fonts, writes a Jasper fonts XML file, writes a jasperreports_extensions.properties
+ * file then packages as a JAR.
  *
- * @author Matthew
+ * @author Matthew Morrissette
  */
-@Mojo(name = "process-fonts", threadSafe = true, defaultPhase = LifecyclePhase.PROCESS_RESOURCES, requiresProject = false)
-public class FontsMojo extends AbstractMojo {
+@Mojo(name = "process-fonts",
+        threadSafe = true,
+        defaultPhase = LifecyclePhase.PROCESS_RESOURCES,
+        requiresProject = false)
+public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
 
-    private static final String[] DEFAULT_FONT_EXTENSIONS = new String[]{".ttf", ".TTF", ".fon", ".FON"};
+    private static final String ITALIC_TYPE = "italic";
 
-    @Component
-    private MavenProject project;
+    private static final String BOLD_TYPE = "bold";
 
-    @Component
-    private MavenProjectHelper projectHelper;
+    private static final String BOLD_ITALIC_TYPE = "boldItalic";
 
-    @Component
-    private BuildPluginManager pluginManager;
+    private static final String NORMAL_TYPE = "normal";
+
+    private static final String DEFAULT_INCLUDES = "**/*.ttf,**/*.TTF";
 
     /**
      * <p>
-     * Should the fonts processed by the plugin be packaged in the resulting jar
-     * file?</p>
+     * Should the fonts processed by the plugin be packaged in the resulting jar file?</p>
      * <p>
-     * If true all font files will be copied into the resultant jar file and
-     * this can be installed directly in the root of the classpath on the system
-     * running Jasper. However, if you do not have rights to distribute these
-     * fonts, be careful about violating licenses.</p>
+     * If true all font files will be copied into the resultant jar file and this can be installed directly in the root
+     * of the classpath on the system running Jasper. However, if you do not have rights to distribute these fonts, be
+     * careful about violating licenses.</p>
      */
     @Parameter(required = false, defaultValue = "false", property = "packageFonts")
     protected boolean packageFonts;
 
     /**
      * <p>
-     * This is the location where fonts will be searched from and all font paths
-     * will be relative to if {@link #packageFonts} is false (the default
-     * value)</p>
+     * This is the location where fonts will be searched from and all font paths will be relative to if
+     * {@link #packageFonts} is false (the default value).</p>
      * <p>
      * In standalone mode this defaults to the current directory</p>
      * <p>
@@ -94,12 +95,11 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * The name of the output jar file</p>
+     * The name of the output jar file.</p>
      * <p>
      * In standalone, this defaults to "fonts.jar"</p>
      * <p>
-     * In a project, this defaults to
-     * ${project.build.finalName}-${classifier}.jar where ${classifier} is the
+     * In a project, this defaults to ${project.build.finalName}-${classifier}.jar where ${classifier} is the
      * {@link #classifier} configuration property of this plugin</p>
      */
     @Parameter(required = false, property = "jarName")
@@ -107,10 +107,9 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * The directory to output the artifacts to. </p>
+     * The directory to output the artifacts to.</p>
      * <p>
-     * In standalone mode this defaults to a subfolder "target" from the current
-     * directory</p>
+     * In standalone mode this defaults to a subfolder "target" from the current directory</p>
      * <p>
      * In a project this defaults to ${project.build.directory} </p>
      */
@@ -119,71 +118,75 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * This is the name of the XML file used to store the font information for
-     * jasper</p>
+     * This is the name of the XML file used to store the font information for jasper.</p>
      * <p>
      * In a standalone mode, this defaults to "jasper_fonts.xml"</p>
      * <p>
-     * In a project this defaults to
-     * ${project.build.finalName}-${classifier}.xml where classifier is the
+     * In a project this defaults to ${project.build.finalName}-${classifier}.xml where classifier is the
      * {@link #classifier} parameter</p>
      * <p>
-     * The default value is almost always appropriate unless you have other font
-     * libraries on the same running Jasper application</p>
+     * The default value is almost always appropriate unless you have other font libraries on the same running Jasper
+     * application</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.xmlFileName")
     protected String xmlFileName;
 
     /**
      * <p>
-     * This parameter is only used if {@link #packageFonts} is false (the
-     * default value). </p>
+     * This parameter is only used if {@link #packageFonts} is false (the default value).</p>
      * <p>
-     * This path will be included in the outputted fonts configuration as the
-     * location of the font files (i.e. the directory) on the system running
-     * Jasper.</p>
+     * This path will be included in the outputted fonts configuration as the location of the font files (i.e. the
+     * directory) on the system running Jasper.</p>
      * <p>
-     * If unspecified in standalone mode this will default to the absolute path
-     * resolved from the {@link #srcPath} parameter</p>
+     * If unspecified in standalone mode this will default to the absolute path resolved from the {@link #srcPath}
+     * parameter</p>
      * <p>
-     * If unspecified in a project, no path will be prepended to the fonts and
-     * it is assumed that all fonts in {@link #srcPath} will be installed at the
-     * root of the classpath on the system running Jasper</p>
+     * If unspecified in a project, no path will be prepended to the fonts and it is assumed that all fonts in
+     * {@link #srcPath} will be installed at the root of the classpath on the system running Jasper</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.deploymentPath")
     protected String deploymentPath;
 
     /**
      * <p>
-     * This parameter controls where the .properties and .xml files needed for
-     * deployment are created</p>
+     * This parameter controls where the .properties and .xml files needed for deployment are created.</p>
      * <p>
      * In standalone mode this defaults to the resolved {@link #deploymentPath}
      * <p>
      * <p>
-     * In in a project this defaults to ${project.build.outputDirectory}. This
-     * will cause the .properties and .xml files to be in the classpath of your
-     * project (either jar or war). If set to an empty element, it will default
-     * to ${project.build.directory}/fonts.</p>
+     * In in a project this defaults to ${project.build.outputDirectory}. This will cause the .properties and .xml files
+     * to be in the classpath of your project (either jar or war). If set to an empty element, it will default to
+     * ${project.build.directory}/fonts.</p>
      */
     @Parameter(required = false, property = "jasperreports.fonts.outputDirectory")
     protected String workPath;
 
     /**
      * <p>
-     * List of extensions to include when scanning for fonts (case
-     * sensative)</p>
+     * Since specifying a {@link #fileSet} in command line mode is impossible, this parameter allows you to specify a
+     * comma separated list of "includes".
+     * </p>
      * <p>
-     * Defaults to: .ttf, .TTF, .fon, .FON
+     * @see FileUtils#getFiles(java.io.File, java.lang.String, java.lang.String)
      */
-    @Parameter(required = false)
-    protected String[] includes;
+    @Parameter(required = false, defaultValue = DEFAULT_INCLUDES)
+    protected String includes;
 
     /**
      * <p>
-     * If required, you can rename families read from the font files to other
-     * families. This allows you to say use "Helvetica" (the default Jasper
-     * font) to a font file you have that isn't Helvetica.</p>
+     * Since specifying a {@link #fileSet} in command line mode is impossible, this parameter allows you to specify a
+     * comma separated list of "excludes".
+     * </p>
+     * <p>
+     * @see FileUtils#getFiles(java.io.File, java.lang.String, java.lang.String)
+     */
+    @Parameter(required = false)
+    protected String excludes;
+
+    /**
+     * <p>
+     * If required, you can rename families read from the font files to other families. This allows you to say use
+     * "Helvetica" (the default Jasper font) to a font file you have that isn't Helvetica.</p>
      * <p>
      * Overrides anything specified in the {@link #renames} parameter</p>
      */
@@ -192,8 +195,8 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * Related to the {@link #familyRenames} parameter, this can be used in
-     * standalone mode to rename certain font families to another</p>
+     * Related to the {@link #familyRenames} parameter, this can be used in standalone mode to rename certain font
+     * families to another.</p>
      * <p>
      * Ignored if {@link #familyRenames} is specified</p>
      * <p>
@@ -216,29 +219,26 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * If a given font family does not have a normal type face font (i.e. not
-     * bold or italic), should one of the other type faces be mapped as the
-     * normal font as well</p>
+     * If a given font family does not have a normal type face font (i.e. not bold or italic), should one of the other
+     * type faces be mapped as the normal font as well.</p>
      * <p>
-     * This will ensure a &lt;normal&gt; element appears for every fontFamily in
-     * the output xml</p>
+     * This will ensure a &lt;normal&gt; element appears for every fontFamily in the output xml</p>
      */
     @Parameter(required = false, defaultValue = "true", property = "jasperreports.fonts.requireNormalFonts")
     protected boolean requireNormalFonts;
 
     /**
      * <p>
-     * If true and a font is unable to be read, the build will fail</p>
+     * If true and a font is unable to be read, the build will fail.</p>
      * <p>
-     * If false (the default value), fonts that are unable to be read will be
-     * skipped</p>
+     * If false (the default value), fonts that are unable to be read will be skipped</p>
      */
     @Parameter(required = false, defaultValue = "false", property = "jasperreports.fonts.failOnBadFont")
     protected boolean failOnBadFont;
 
     /**
      * <p>
-     * The value of the "pdfEmbedded" XML element in the fonts XML file</p>
+     * The value of the "pdfEmbedded" XML element in the fonts XML file.</p>
      * <p>
      * The default is almost always appropriate</p>
      */
@@ -247,7 +247,7 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * The value of the "pdfEncoding" XML element in the fonts XML file</p>
+     * The value of the "pdfEncoding" XML element in the fonts XML file.</p>
      * <p>
      * The default value is almost always appropriate</p>
      */
@@ -256,23 +256,29 @@ public class FontsMojo extends AbstractMojo {
 
     /**
      * <p>
-     * Should the output jar be attached as an artifact to the current project
-     * (has no effect in standalone)</p>
+     * Should the output jar be attached as an artifact to the current project (has no effect in standalone).</p>
      */
     @Parameter(required = false, defaultValue = "false")
     protected boolean attachArtifact;
 
     /**
      * <p>
-     * If {@link #attachArtifact} is true, this is the classifier of the
-     * attached artifact</p>
+     * If {@link #attachArtifact} is true, this is the classifier of the attached artifact.</p>
      */
     @Parameter(required = false, defaultValue = "fonts", property = "jasperreports.fonts.classifier")
     protected String classifier;
 
+    @Component
+    private MavenProject project;
+
+    @Component
+    private MavenProjectHelper projectHelper;
+
     private Map<String, String> renameMap;
 
     private File srcDir;
+
+    private String srcFilePath;
 
     private File jarOutputDir;
 
@@ -280,50 +286,28 @@ public class FontsMojo extends AbstractMojo {
 
     private File extensionPropertiesFile;
 
+    private File xmlFile;
+
     private boolean standalone;
+
+    private final Map<String, List<Font>> families = new HashMap<String, List<Font>>(25);
+
+    private final Map<String, File> files = new HashMap<String, File>();
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         parseConfiguration();
 
-        final Map<String, List<Font>> families = new HashMap<>(25);
-        final Map<String, File> files = new HashMap<>();
-        for (final File fontFile : srcDir.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(final File dir, final String name) {
-                for (final String suffix : includes) {
-                    if (name.endsWith(suffix)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-        })) {
-            //Try to load them with both families
-            if (!loadFont(families, files, fontFile, Font.TRUETYPE_FONT, false)) {
-                loadFont(families, files, fontFile, Font.TYPE1_FONT, true);
+        try {
+            for (final File fontFile : FileUtils.getFiles(srcDir, includes, excludes)) {
+                processFontFile(fontFile);
             }
         }
-
-        final File xmlFile = new File(workDirectory, xmlFileName);
-        try (final FileWriter writer = new FileWriter(xmlFile)) {
-            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<fontFamilies>\n");
-            for (final Map.Entry<String, List<Font>> entry : families.entrySet()) {
-                if (renameMap.containsKey(entry.getKey())) {
-                    writeFontFamily(files, renameMap.get(entry.getKey()), entry.getValue(), writer, true);
-                    if (copyOnRename) {
-                        writeFontFamily(files, entry.getKey(), entry.getValue(), writer, false);
-                    }
-                } else {
-                    writeFontFamily(files, entry.getKey(), entry.getValue(), writer, true);
-                }
-            }
-            writer.write("</fontFamilies>\n");
-        } catch (final IOException exp) {
-            throw new MojoExecutionException("Exception while writing fonts list xml file", exp);
+        catch (final IOException exp) {
+            throw new MojoFailureException("Unable to read source directory: " + srcDir.getAbsolutePath(), exp);
         }
+
+        writeXMLFile();
 
         writeExtensionProperties();
 
@@ -342,7 +326,8 @@ public class FontsMojo extends AbstractMojo {
 
         try {
             jarArchiver.createArchive();
-        } catch (IOException exp) {
+        }
+        catch (final IOException exp) {
             throw new MojoFailureException("IOException while creating archive", exp);
         }
 
@@ -351,50 +336,154 @@ public class FontsMojo extends AbstractMojo {
         }
     }
 
-    private boolean loadFont(final Map<String, List<Font>> families, final Map<String, File> files, final File fontFile, final int type, boolean failIfBad) throws MojoFailureException {
-        try (final FileInputStream fis = new FileInputStream(fontFile)) {
-            final Font font = Font.createFont(Font.TRUETYPE_FONT, fis);
+    private void processFontFile(final File fontFile) throws MojoExecutionException, MojoFailureException {
+        if (fontFile.isFile()) {
+            if (!loadFont(fontFile, Font.TRUETYPE_FONT, false)) {
+                loadFont(fontFile, Font.TYPE1_FONT, true);
+            }
+        }
+    }
+
+    private boolean loadFont(
+            final File fontFile,
+            final int type,
+            final boolean failIfBad) throws MojoFailureException {
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(fontFile);
+            final Font font = Font.createFont(type, fis);
 
             final String fontFamily;
             if (font.getFamily() == null || font.getFamily().trim().isEmpty()) {
                 fontFamily = font.getName();
-            } else {
+            }
+            else {
                 fontFamily = font.getFamily();
             }
             List<Font> fonts = families.get(fontFamily);
             if (fonts == null) {
-                fonts = new LinkedList<>();
+                fonts = new LinkedList<Font>();
                 families.put(fontFamily, fonts);
             }
             files.put(font.getName(), fontFile);
             fonts.add(font);
             return true;
-        } catch (final IOException | FontFormatException exp) {
+        }
+        catch (final IOException exp) {
             if (failIfBad) {
                 if (failOnBadFont) {
-                    throw new MojoFailureException("Exception while reading font file:" + fontFile.getAbsolutePath());
-                } else {
-                    getLog().warn("Exception while reading font file:" + fontFile.getAbsolutePath());
+                    throw new MojoFailureException("Exception while opening font file:"
+                            + fontFile.getAbsolutePath(), exp);
+                }
+                else {
+                    getLog().warn("Exception while opening font file:"
+                            + fontFile.getAbsolutePath());
                 }
             }
             return false;
+        }
+        catch (final FontFormatException exp) {
+            if (failIfBad) {
+                if (failOnBadFont) {
+                    throw new MojoFailureException("Exception while reading font file:"
+                            + fontFile.getAbsolutePath(), exp);
+                }
+                else {
+                    getLog().warn("Exception while reading font file:"
+                            + fontFile.getAbsolutePath());
+                }
+            }
+            return false;
+        }
+        finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                }
+                catch (final IOException exp) {
+                    getLog().warn("Unable to close font files", exp);
+                }
+            }
+        }
+    }
+
+    private File writeXMLFile() throws MojoExecutionException {
+        xmlFile = new File(workDirectory, xmlFileName);
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(xmlFile);
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<fontFamilies>\n");
+            for (final Map.Entry<String, List<Font>> entry : families.entrySet()) {
+                if (renameMap.containsKey(entry.getKey())) {
+                    writeFontFamily(renameMap.get(entry.getKey()), entry.getValue(), writer, true);
+                    if (copyOnRename) {
+                        writeFontFamily(entry.getKey(), entry.getValue(), writer, false);
+                    }
+                }
+                else {
+                    writeFontFamily(entry.getKey(), entry.getValue(), writer, true);
+                }
+            }
+            writer.write("</fontFamilies>\n");
+        }
+        catch (final IOException exp) {
+            throw new MojoExecutionException("Exception while writing fonts list xml file", exp);
+        }
+        finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                }
+                catch (final IOException exp) {
+                    getLog().warn("Exception while closing XML file:" + xmlFile, exp);
+                }
+            }
+        }
+        return xmlFile;
+    }
+
+    private String getRelativeToSourcePath(final File file) throws IOException {
+        final String normalizedFile = FileUtils.normalize(file.getAbsolutePath());
+        if (normalizedFile.startsWith(srcFilePath)) {
+            return normalizedFile.substring(srcFilePath.length() + 1);
+        }
+        else {
+            return file.getName();
         }
     }
 
     private void writeExtensionProperties() throws MojoFailureException {
         extensionPropertiesFile = new File(workDirectory, "jasperreports_extension.properties");
-        try (final OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(extensionPropertiesFile))) {
-            writer.write("net.sf.jasperreports.extension.registry.factory.font=net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory\n");
+        OutputStreamWriter writer = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(extensionPropertiesFile));
+            writer.write("net.sf.jasperreports.extension.registry.factory.font="
+                    + "net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory\n");
             writer.write("net.sf.jasperreports.extension.simple.font.families.fonts=");
             writer.write(xmlFileName);
             writer.write("\n");
             writer.flush();
-        } catch (IOException exp) {
-            throw new MojoFailureException("Exception while writing jasperreports_extension.properties");
+        }
+        catch (final IOException exp) {
+            throw new MojoFailureException("Exception while writing jasperreports_extension.properties", exp);
+        }
+        finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                }
+                catch (final IOException exp) {
+                    getLog().warn("Exception while closing extension properties file", exp);
+                }
+            }
         }
     }
 
-    private void writeFontFamily(final Map<String, File> files, final String familyName, final List<Font> fonts, final FileWriter writer, boolean log) throws IOException {
+    private void writeFontFamily(
+            final String familyName,
+            final List<Font> fonts,
+            final FileWriter writer,
+            final boolean log) throws IOException {
         writer.write("\t<fontFamily name=\"");
         writer.write(familyName);
         writer.write("\">\n");
@@ -407,59 +496,30 @@ public class FontsMojo extends AbstractMojo {
             lastFont = font;
             if (font.isBold() || font.getName().toLowerCase().contains("bold")) {
                 if (font.isItalic() || font.getName().toLowerCase().contains("italic")) {
-                    if (!hasBoldItalic) {
-                        writer.write("\t\t<boldItalic>");
-                        writer.write(deploymentPath);
-                        writer.write(files.get(font.getName()).getName().trim());
-                        writer.write("</boldItalic>\n");
-                        hasBoldItalic = true;
-                    } else {
-                        if (log) {
-                            getLog().info("Font Family: '" + familyName + ", Font: '" + font.getName() + "' already has a bold italic font");
-                        }
-                    }
-                } else {
-                    if (!hasBold) {
-                        writer.write("\t\t<bold>");
-                        writer.write(deploymentPath);
-                        writer.write(files.get(font.getName()).getName().trim());
-                        writer.write("</bold>\n");
-                        hasBold = true;
-                    } else {
-                        if (log) {
-                            getLog().info("Font Family: '" + familyName + ", Font: '" + font.getName() + "' already has a bold font");
-                        }
-                    }
+                    writeFont(writer, font, BOLD_ITALIC_TYPE, hasBoldItalic, log);
+                    hasBoldItalic = true;
                 }
-            } else if (font.isItalic() || font.getName().toLowerCase().contains("italic")) {
-                if (!hasItalic) {
-                    writer.write("\t\t<italic>");
-                    writer.write(deploymentPath);
-                    writer.write(files.get(font.getName()).getName().trim());
-                    writer.write("</italic>\n");
-                    hasItalic = true;
-                } else {
-                    if (log) {
-                        getLog().info("Font Family: '" + familyName + ", Font: '" + font.getName() + "' already has an italic font");
-                    }
+                else {
+                    writeFont(writer, font, BOLD_TYPE, hasBold, log);
+                    hasBold = true;
                 }
-            } else {
-                if (!hasNormal) {
-                    writer.write("\t\t<normal>");
-                    writer.write(deploymentPath);
-                    writer.write(files.get(font.getName()).getName().trim());
-                    writer.write("</normal>\n");
-                    hasNormal = true;
-                } else {
-                    if (log) {
-                        getLog().info("Font Family: '" + familyName + ", Font: '" + font.getName() + "' already has a normal font");
-                    }
-                }
+            }
+            else if (font.isItalic() || font.getName().toLowerCase().contains("italic")) {
+                writeFont(writer, font, ITALIC_TYPE, hasItalic, log);
+                hasItalic = true;
+            }
+            else {
+                writeFont(writer, font, NORMAL_TYPE, hasNormal, log);
+                hasNormal = true;
             }
         }
         if (requireNormalFonts && !hasNormal && lastFont != null) {
             if (log) {
-                getLog().info("Font Family: '" + familyName + "' did not have a normal font. Mapping font: " + lastFont.getName() + " to the normal font.");
+                getLog().info("Font Family: '"
+                        + familyName
+                        + "' did not have a normal font. Mapping font: "
+                        + lastFont.getName()
+                        + " to the normal font.");
             }
             writer.write("\t\t<normal>");
             writer.write(deploymentPath);
@@ -476,99 +536,40 @@ public class FontsMojo extends AbstractMojo {
         writer.write("\t</fontFamily>\n");
     }
 
-    private void parseConfiguration() throws MojoExecutionException, MojoFailureException {
+    private void writeFont(final Writer writer,
+            final Font font,
+            final String type,
+            final boolean alreadyPresent,
+            final boolean log) throws IOException {
+
+        if (!alreadyPresent) {
+            writer.write("\t\t<");
+            writer.write(type);
+            writer.write(">");
+            writer.write(deploymentPath);
+            final File fontFile = files.get(font.getName());
+            writer.write(packageFonts ? fontFile.getName().trim() : getRelativeToSourcePath(fontFile));
+            writer.write("</");
+            writer.write(type);
+            writer.write(">\n");
+        }
+        else if (log) {
+            getLog().info("Font Family: '"
+                    + font.getFamily() != null && !font.getFamily().trim().isEmpty() ? font.getFamily() : font.getName()
+                    + ", Font: '"
+                    + font.getName()
+                    + "' already has a normal font"
+            );
+        }
+    }
+
+    protected void parseConfiguration() throws MojoExecutionException, MojoFailureException {
         if (project != null && project.getBasedir() == null) {
             //We are running standalone
-            standalone = true;
-
-            if (srcPath == null) {
-                srcDir = new File(".");
-            } else {
-                srcDir = new File(srcPath);
-            }
-
-            try {
-                if (packageFonts == false && deploymentPath == null) {
-                    deploymentPath = srcDir.getCanonicalPath();
-                    if (!deploymentPath.endsWith(File.separator)) {
-                        deploymentPath += File.separator;
-                    }
-                } else {
-                    deploymentPath = "";
-                    srcDir.getCanonicalPath();
-                }
-            } catch (final IOException exp) {
-                throw new MojoExecutionException("Unable to find path: " + srcDir.getAbsolutePath(), exp);
-            }
-
-            final MavenProject curProject = project;
-            final File basedir = new File(".");
-            project = new ProjectForwarder() {
-                @Override
-                protected MavenProject delegate() {
-                    return curProject;
-                }
-
-                @Override
-                public File getBasedir() {
-                    return basedir;
-                }
-
-            };
-            if (outputPath == null) {
-                workDirectory = new File(basedir, "target");
-                outputPath = workDirectory.getAbsolutePath();
-                workDirectory.mkdirs();
-                project.getBuild().setOutputDirectory(outputPath);
-                project.getBuild().setDirectory(outputPath);
-                jarOutputDir = workDirectory;
-            }
-            if (jarName == null) {
-                jarName = "fonts.jar";
-            }
-
-            if (xmlFileName == null) {
-                xmlFileName = "jasper_fonts.xml";
-            }
-        } else {
-            //We're running in a project
-            standalone = false;
-
-            if (outputPath == null) {
-                outputPath = project.getBuild().getDirectory();
-            }
-            if (workPath == null) {
-                if (project.getBuild().getOutputDirectory() == null) {
-                    project.getBuild().setOutputDirectory(project.getBuild().getDirectory());
-                }
-                workDirectory = new File(project.getBuild().getOutputDirectory());
-            } else if (workPath.isEmpty()) {
-                workDirectory = new File(project.getBuild().getDirectory(), "fonts");
-                workDirectory.mkdirs();
-            } else {
-                workDirectory = new File(project.getBasedir(), workPath);
-            }
-            jarOutputDir = new File(outputPath);
-            jarOutputDir.mkdirs();
-
-            if (srcPath == null) {
-                srcDir = new File(project.getBasedir(), "src/fonts");
-            } else {
-                srcDir = new File(project.getBasedir(), srcPath);
-            }
-
-            if (deploymentPath != null && !deploymentPath.endsWith(File.separator)) {
-                deploymentPath += File.separator;
-            }
-            if (packageFonts || deploymentPath == null) {
-                deploymentPath = "";
-            }
-            if (jarName == null) {
-                jarName = project.getBuild().getFinalName() + "-" + classifier + ".jar";
-            }
-            if (xmlFileName == null) {
-                xmlFileName = project.getBuild().getFinalName() + "-" + classifier + ".xml";
-            }
+            parseStandaloneConfiguration();
+        }
+        else {
+            parseProjectConfiguration();
         }
 
         if (jarName.indexOf('.') < 0) {
@@ -580,30 +581,128 @@ public class FontsMojo extends AbstractMojo {
         }
 
         if (!srcDir.exists()) {
-            throw new MojoFailureException("Unable to find source directory to scan fonts: " + srcDir.getAbsolutePath());
+            throw new MojoFailureException("Unable to find source directory to scan fonts: " 
+                    + srcDir.getAbsolutePath());
         }
 
         if (familyRenames != null) {
-            renameMap = new HashMap<>(familyRenames.length * 3 / 2);
+            renameMap = new HashMap<String, String>(familyRenames.length * 3 / 2);
             for (final FamilyRename rename : familyRenames) {
                 renameMap.put(rename.getFromFamily(), rename.getToFamily());
             }
-        } else if (renames != null) {
+        }
+        else if (renames != null) {
             final String[] values = renames.split(",");
-            renameMap = new HashMap<>(values.length * 3 / 2);
+            renameMap = new HashMap<String, String>(values.length * 3 / 2);
             for (final String value : values) {
                 final String[] renameValues = value.split(":");
                 if (renameValues.length == 1 || renameValues.length > 2) {
-                    throw new MojoFailureException("'renames' parameter is of incorrect syntax. See plugin documentation for more information.");
+                    throw new MojoFailureException("'renames' parameter is of incorrect syntax. "
+                            + "See plugin documentation for more information.");
                 }
                 renameMap.put(renameValues[0], renameValues[1]);
             }
-        } else {
+        }
+        else {
             renameMap = Collections.emptyMap();
         }
+    }
 
-        if (includes == null) {
-            includes = DEFAULT_FONT_EXTENSIONS;
+    protected void parseProjectConfiguration() throws MojoExecutionException {
+        //We're running in a project
+        standalone = false;
+
+        if (outputPath == null) {
+            outputPath = project.getBuild().getDirectory();
+        }
+        if (workPath == null) {
+            if (project.getBuild().getOutputDirectory() == null) {
+                project.getBuild().setOutputDirectory(project.getBuild().getDirectory());
+            }
+            workDirectory = new File(project.getBuild().getOutputDirectory());
+        }
+        else if (workPath.isEmpty()) {
+            workDirectory = new File(project.getBuild().getDirectory(), "fonts");
+            workDirectory.mkdirs();
+        }
+        else {
+            workDirectory = new File(project.getBasedir(), workPath);
+        }
+        jarOutputDir = new File(outputPath);
+        jarOutputDir.mkdirs();
+
+        if (srcPath == null) {
+            srcDir = new File(project.getBasedir(), "src/fonts");
+        }
+        else {
+            srcDir = new File(project.getBasedir(), srcPath);
+        }
+        srcFilePath = FileUtils.normalize(srcDir.getAbsolutePath());
+
+        if (deploymentPath != null && !deploymentPath.endsWith(File.separator)) {
+            deploymentPath += File.separator;
+        }
+        if (packageFonts || deploymentPath == null) {
+            deploymentPath = "";
+        }
+        if (jarName == null) {
+            jarName = project.getBuild().getFinalName() + "-" + classifier + ".jar";
+        }
+        if (xmlFileName == null) {
+            xmlFileName = project.getBuild().getFinalName() + "-" + classifier + ".xml";
+        }
+    }
+
+    protected void parseStandaloneConfiguration() throws MojoExecutionException {
+        standalone = true;
+
+        if (srcPath == null) {
+            srcDir = new File(".");
+        }
+        else {
+            srcDir = new File(srcPath);
+        }
+        srcFilePath = FileUtils.normalize(srcDir.getAbsolutePath());
+
+        try {
+            if (packageFonts == false && deploymentPath == null) {
+                deploymentPath = srcDir.getCanonicalPath();
+                if (!deploymentPath.endsWith(File.separator)) {
+                    deploymentPath += File.separator;
+                }
+            }
+            else {
+                deploymentPath = "";
+                srcDir.getCanonicalPath();
+            }
+        }
+        catch (final IOException exp) {
+            throw new MojoExecutionException("Unable to find path: " + srcDir.getAbsolutePath(), exp);
+        }
+
+        final File basedir;
+        try {
+            basedir = new File(".").getCanonicalFile();
+        }
+        catch (final IOException exp) {
+            throw new MojoExecutionException("Unable to get current directory", exp);
+        }
+
+        if (outputPath == null) {
+            workDirectory = new File(basedir, "target");
+            outputPath = workDirectory.getAbsolutePath();
+            workDirectory.mkdirs();
+            project.getBuild().setOutputDirectory(outputPath);
+            project.getBuild().setDirectory(outputPath);
+            jarOutputDir = workDirectory;
+        }
+        if (jarName == null) {
+            jarName = "fonts.jar";
+        }
+
+        if (xmlFileName == null) {
+            xmlFileName = "jasper_fonts.xml";
         }
     }
 }
+
