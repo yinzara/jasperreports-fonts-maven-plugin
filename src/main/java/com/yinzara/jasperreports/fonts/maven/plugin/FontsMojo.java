@@ -338,7 +338,8 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
 
     private void processFontFile(final File fontFile) throws MojoExecutionException, MojoFailureException {
         if (fontFile.isFile()) {
-            if (!loadFont(fontFile, Font.TRUETYPE_FONT, false)) {
+            final boolean loaded = loadFont(fontFile, Font.TRUETYPE_FONT, false);
+            if (!loaded) {
                 loadFont(fontFile, Font.TYPE1_FONT, true);
             }
         }
@@ -665,7 +666,7 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
         srcFilePath = FileUtils.normalize(srcDir.getAbsolutePath());
 
         try {
-            if (packageFonts == false && deploymentPath == null) {
+            if (!packageFonts && deploymentPath == null) {
                 deploymentPath = srcDir.getCanonicalPath();
                 if (!deploymentPath.endsWith(File.separator)) {
                     deploymentPath += File.separator;
