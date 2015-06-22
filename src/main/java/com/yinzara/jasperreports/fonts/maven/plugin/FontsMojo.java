@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.maven.plugin.MojoExecutionException;
@@ -296,43 +297,51 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        parseConfiguration();
+        final Locale originalLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
 
         try {
-            for (final File fontFile : FileUtils.getFiles(srcDir, includes, excludes)) {
-                processFontFile(fontFile);
+            parseConfiguration();
+
+            try {
+                for (final File fontFile : FileUtils.getFiles(srcDir, includes, excludes)) {
+                    processFontFile(fontFile);
+                }
+            }
+            catch (final IOException exp) {
+                throw new MojoFailureException("Unable to read source directory: " + srcDir.getAbsolutePath(), exp);
+            }
+
+            writeXMLFile();
+
+            writeExtensionProperties();
+
+            final File outputFile = new File(jarOutputDir, jarName);
+            final JarArchiver jarArchiver = new JarArchiver();
+            jarArchiver.setDestFile(outputFile);
+
+            jarArchiver.addFile(xmlFile, xmlFile.getName());
+            jarArchiver.addFile(extensionPropertiesFile, extensionPropertiesFile.getName());
+
+            if (packageFonts) {
+                for (final File font : files.values()) {
+                    jarArchiver.addFile(font, font.getName());
+                }
+            }
+
+            try {
+                jarArchiver.createArchive();
+            }
+            catch (final IOException exp) {
+                throw new MojoFailureException("IOException while creating archive", exp);
+            }
+
+            if (!standalone && attachArtifact) {
+                projectHelper.attachArtifact(project, "jar", classifier, outputFile);
             }
         }
-        catch (final IOException exp) {
-            throw new MojoFailureException("Unable to read source directory: " + srcDir.getAbsolutePath(), exp);
-        }
-
-        writeXMLFile();
-
-        writeExtensionProperties();
-
-        final File outputFile = new File(jarOutputDir, jarName);
-        final JarArchiver jarArchiver = new JarArchiver();
-        jarArchiver.setDestFile(outputFile);
-
-        jarArchiver.addFile(xmlFile, xmlFile.getName());
-        jarArchiver.addFile(extensionPropertiesFile, extensionPropertiesFile.getName());
-
-        if (packageFonts) {
-            for (final File font : files.values()) {
-                jarArchiver.addFile(font, font.getName());
-            }
-        }
-
-        try {
-            jarArchiver.createArchive();
-        }
-        catch (final IOException exp) {
-            throw new MojoFailureException("IOException while creating archive", exp);
-        }
-
-        if (!standalone && attachArtifact) {
-            projectHelper.attachArtifact(project, "jar", classifier, outputFile);
+        finally {
+            Locale.setDefault(originalLocale);
         }
     }
 
