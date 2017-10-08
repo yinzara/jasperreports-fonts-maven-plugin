@@ -458,7 +458,7 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
         OutputStreamWriter writer = null;
         try {
             writer = new OutputStreamWriter(new FileOutputStream(extensionPropertiesFile));
-            writer.write("net.sf.jasperreports.extension.registry.factory.font="
+            writer.write("net.sf.jasperreports.extension.registry.factory.fonts="
                     + "net.sf.jasperreports.engine.fonts.SimpleFontExtensionsRegistryFactory\n");
             writer.write("net.sf.jasperreports.extension.simple.font.families.fonts=");
             writer.write(xmlFileName);
