@@ -1,24 +1,24 @@
 /**
- The MIT License (MIT)
-
- Copyright (c) 2013 yinzara
-
- Permission is hereby granted, free of charge, to any person obtaining a copy of
- this software and associated documentation files (the "Software"), to deal in
- the Software without restriction, including without limitation the rights to
- use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- the Software, and to permit persons to whom the Software is furnished to do so,
- subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * The MIT License (MIT)
+ * <p>
+ * Copyright (c) 2013 yinzara
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.yinzara.jasperreports.fonts.maven.plugin;
 
@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -168,6 +169,7 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
      * comma separated list of "includes".
      * </p>
      * <p>
+     *
      * @see FileUtils#getFiles(java.io.File, java.lang.String, java.lang.String)
      */
     @Parameter(required = false, defaultValue = DEFAULT_INCLUDES)
@@ -179,6 +181,7 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
      * comma separated list of "excludes".
      * </p>
      * <p>
+     *
      * @see FileUtils#getFiles(java.io.File, java.lang.String, java.lang.String)
      */
     @Parameter(required = false)
@@ -275,7 +278,7 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
     @Component
     private MavenProjectHelper projectHelper;
 
-    private Map<String, String> renameMap;
+    private Map<String, List<String>> renamesMap;
 
     private File srcDir;
 
@@ -424,8 +427,11 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
             writer = new FileWriter(xmlFile);
             writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<fontFamilies>\n");
             for (final Map.Entry<String, List<Font>> entry : families.entrySet()) {
-                if (renameMap.containsKey(entry.getKey())) {
-                    writeFontFamily(renameMap.get(entry.getKey()), entry.getValue(), writer, true);
+                if (renamesMap.containsKey(entry.getKey())) {
+                    final List<String> newRenames = renamesMap.get(entry.getKey());
+                    for (String rename : newRenames) {
+                        writeFontFamily(rename, entry.getValue(), writer, true);
+                    }
                     if (copyOnRename) {
                         writeFontFamily(entry.getKey(), entry.getValue(), writer, false);
                     }
@@ -547,10 +553,10 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
     }
 
     private void writeFont(final Writer writer,
-            final Font font,
-            final String type,
-            final boolean alreadyPresent,
-            final boolean log) throws IOException {
+                           final Font font,
+                           final String type,
+                           final boolean alreadyPresent,
+                           final boolean log) throws IOException {
 
         if (!alreadyPresent) {
             writer.write("\t\t<");
@@ -591,30 +597,44 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
         }
 
         if (!srcDir.exists()) {
-            throw new MojoFailureException("Unable to find source directory to scan fonts: " 
+            throw new MojoFailureException("Unable to find source directory to scan fonts: "
                     + srcDir.getAbsolutePath());
         }
 
         if (familyRenames != null) {
-            renameMap = new HashMap<String, String>(familyRenames.length * 3 / 2);
+            renamesMap = new HashMap<String, List<String>>(familyRenames.length * 3 / 2);
             for (final FamilyRename rename : familyRenames) {
-                renameMap.put(rename.getFromFamily(), rename.getToFamily());
+                if (renamesMap.containsKey(rename.getFromFamily())) {
+                    renamesMap.get(rename.getFromFamily()).add(rename.getToFamily());
+                }
+                else {
+                    final List<String> newRenames = new ArrayList<String>();
+                    newRenames.add(rename.getToFamily());
+                    renamesMap.put(rename.getFromFamily(), newRenames);
+                }
             }
         }
         else if (renames != null) {
             final String[] values = renames.split(",");
-            renameMap = new HashMap<String, String>(values.length * 3 / 2);
+            renamesMap = new HashMap<String, List<String>>(values.length * 3 / 2);
             for (final String value : values) {
                 final String[] renameValues = value.split(":");
                 if (renameValues.length == 1 || renameValues.length > 2) {
                     throw new MojoFailureException("'renames' parameter is of incorrect syntax. "
                             + "See plugin documentation for more information.");
                 }
-                renameMap.put(renameValues[0], renameValues[1]);
+                if (renamesMap.containsKey(values[0])) {
+                    renamesMap.get(values[0]).add(values[1]);
+                }
+                else {
+                    final List<String> newRenames = new ArrayList<String>();
+                    newRenames.add(values[1]);
+                    renamesMap.put(values[0], newRenames);
+                }
             }
         }
         else {
-            renameMap = Collections.emptyMap();
+            renamesMap = Collections.emptyMap();
         }
     }
 
