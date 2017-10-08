@@ -28,7 +28,20 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <name>Nexus</name>
+            <url>https://valuya.be:50443/nexus/repository/maven-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus</id>
+            <name>Nexus</name>
+            <url>https://valuya.be:50443/nexus/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <developers>
         
         <developer>
@@ -46,13 +59,13 @@
     
     <issueManagement>
         <system>GitHub</system>
-        <url>https://github.com/yinzara/jasperreports-fonts-maven-plugin/issues</url>
+        <url>https://github.com/cghislai/jasperreports-fonts-maven-plugin/issues</url>
     </issueManagement>
   
     <scm>
-        <url>https://github.com/yinzara/jasperreports-fonts-maven-plugin</url>
-        <connection>scm:git:https://github.com/yinzara/jasperreports-fonts-maven-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:yinzara/jasperreports-fonts-maven-plugin.git</developerConnection>
+        <url>https://github.com/cghislai/jasperreports-fonts-maven-plugin</url>
+        <connection>scm:git:https://github.com/cghislai/jasperreports-fonts-maven-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:cghislai/jasperreports-fonts-maven-plugin.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
