@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <!DOCTYPE module PUBLIC
-        "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
-        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+    "-//Puppy Crawl//DTD Check Configuration 1.2//EN"
+    "http://www.puppycrawl.com/dtds/configuration_1_2.dtd">
 
 <module name="Checker">
 
@@ -283,7 +283,7 @@ THE SOFTWARE.
         <!-- also override method equals(java.lang.Object)               -->
         <module name="CovariantEquals"/>
 
-
+      
         <!-- Avoid empty statements -->
         <!-- TODO: Should be alloed in empty for-loop -->
         <module name="EmptyStatement"/>
@@ -294,12 +294,12 @@ THE SOFTWARE.
 
         <!-- Checks that local variables and parameters that are never -->
         <!-- are declared final                                        -->
-
+        
         <module name="FinalLocalVariable">
-            <property name="tokens" value="PARAMETER_DEF,
+          <property name="tokens" value="PARAMETER_DEF,
                                          VARIABLE_DEF"/>
         </module>
-
+        
 
         <!-- Check that method/constructor/catch block parameters are final -->
         <!--
@@ -326,6 +326,11 @@ THE SOFTWARE.
         <!-- Avoid modifying control variables -->
         <module name="ModifiedControlVariable"/>
 
+        <!-- Avoid redundant throws -->
+        <module name="RedundantThrows">
+            <property name="allowUnchecked" value="true"/>
+        </module>
+
         <!-- Require simple boolean expressions -->
         <module name="SimplifyBooleanExpression"/>
 
@@ -350,6 +355,9 @@ THE SOFTWARE.
 
         <!-- Require all classes to be in a package -->
         <module name="PackageDeclaration"/>
+
+        <!-- Ensures correct layout of JUnit test cases -->
+        <module name="JUnitTestCase"/>
 
         <!-- Enforce the following declaration order: -->
         <!--   1. Class variables    -->
@@ -386,7 +394,7 @@ THE SOFTWARE.
 
         <!-- Utility classes should have private ctor -->
         <module name="HideUtilityClassConstructor"/>
-
+      
         <!-- Ensures that exception classes are immutable -->
         <module name="MutableException"/>
 
