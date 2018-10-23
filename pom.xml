@@ -7,7 +7,7 @@
     </parent>
     <groupId>com.yinzara</groupId>
     <artifactId>jasperreports-fonts-maven-plugin</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
 
     <name>jasperreports-fonts-maven-plugin Maven Plugin</name>
@@ -54,7 +54,7 @@
         <url>https://github.com/yinzara/jasperreports-fonts-maven-plugin</url>
         <connection>scm:git:https://github.com/yinzara/jasperreports-fonts-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:yinzara/jasperreports-fonts-maven-plugin.git</developerConnection>
-        <tag>jasperreports-fonts-maven-plugin-0.1.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
