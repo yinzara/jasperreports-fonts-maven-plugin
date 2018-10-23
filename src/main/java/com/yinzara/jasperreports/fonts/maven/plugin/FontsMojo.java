@@ -320,20 +320,32 @@ public class FontsMojo extends org.apache.maven.plugin.AbstractMojo {
             final JarArchiver jarArchiver = new JarArchiver();
             jarArchiver.setDestFile(outputFile);
 
-            jarArchiver.addFile(xmlFile, xmlFile.getName());
-            jarArchiver.addFile(extensionPropertiesFile, extensionPropertiesFile.getName());
-
+            if (attachArtifact | standalone) {
+                jarArchiver.addFile(xmlFile, xmlFile.getName());
+                jarArchiver.addFile(extensionPropertiesFile, extensionPropertiesFile.getName());
+            }
             if (packageFonts) {
                 for (final File font : files.values()) {
-                    jarArchiver.addFile(font, font.getName());
+                    if (attachArtifact | standalone) {
+                        jarArchiver.addFile(font, font.getName());
+                    }
+                    
+                    final File outputFontFile = new File(workDirectory, font.getName());
+                    try {
+                        FileUtils.copyFile(font, outputFontFile);
+                    } catch (final IOException exp) {
+                        throw new MojoFailureException("IOException while creating archive", exp);
+                    }
                 }
             }
 
-            try {
-                jarArchiver.createArchive();
-            }
-            catch (final IOException exp) {
-                throw new MojoFailureException("IOException while creating archive", exp);
+            if (attachArtifact | standalone) {
+                try {
+                    jarArchiver.createArchive();
+                }
+                catch (final IOException exp) {
+                    throw new MojoFailureException("IOException while creating archive", exp);
+                }
             }
 
             if (!standalone && attachArtifact) {
